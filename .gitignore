@@ -1,0 +1,5 @@
+# Raw, unoptimized source deliverables (100+ MB) — not needed in the repo.
+# Optimized production assets live in assets/ and are tracked normally.
+source-assets/
+
+.DS_Store

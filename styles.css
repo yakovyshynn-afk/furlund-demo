@@ -1,0 +1,1203 @@
+/* ==========================================================================
+   FURLUND — design system & shared styles
+   Timber-frame architecture studio (concept brand).
+   Fonts: Space Grotesk (display/headings), Plus Jakarta Sans (body/UI).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+:root {
+  /* color — light surface (default) */
+  --color-bg: #F6F2EA;
+  --color-surface: #EFE9DC;
+  --color-surface-2: #E4DCC9;
+  --color-ink: #16150F;
+  --color-ink-soft: #33312A;
+  --color-muted: #726C5C;
+  --color-border: #DBD3BF;
+  --color-accent: #A9713D;
+  --color-accent-soft: #C79A66;
+  --color-accent-ink: #6E4623;
+
+  /* color — dark surface (inverted sections) */
+  --color-dark-bg: #14130E;
+  --color-dark-surface: #1D1C14;
+  --color-dark-surface-2: #262418;
+  --color-on-dark: #F4EFE2;
+  --color-on-dark-soft: #B7AF9B;
+  --color-on-dark-border: rgba(244, 239, 226, 0.14);
+
+  /* semantic (adaptive within a section via data-theme) */
+  --background: var(--color-bg);
+  --surface: var(--color-surface);
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-muted);
+  --border: var(--color-border);
+  --accent: var(--color-accent);
+
+  /* status colors (forms) */
+  --color-success: #3F5A3D;
+  --color-success-bg: #E5EBDE;
+  --color-error: #8C3A2B;
+  --color-error-bg: #F3E2DC;
+
+  /* typography */
+  --font-display: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-display-xl: clamp(2.75rem, 5.4vw + 1rem, 6.75rem);
+  --fs-display-l: clamp(2.25rem, 4vw + 1rem, 4.75rem);
+  --fs-h1: clamp(2rem, 2.6vw + 1.1rem, 3.4rem);
+  --fs-h2: clamp(1.6rem, 1.7vw + 1rem, 2.6rem);
+  --fs-h3: clamp(1.25rem, 0.9vw + 1rem, 1.65rem);
+  --fs-body-l: clamp(1.05rem, 0.3vw + 1rem, 1.25rem);
+  --fs-body: 1rem;
+  --fs-body-s: 0.9rem;
+  --fs-label: 0.78rem;
+  --fs-caption: 0.78rem;
+
+  /* spacing scale (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 5rem;
+  --space-10: 6rem;
+  --space-11: 8rem;
+  --space-12: 10rem;
+
+  /* layout */
+  --container-max: 1440px;
+  --container-pad: clamp(1.25rem, 4.2vw, 4.5rem);
+  --header-h: 84px;
+
+  /* motion */
+  --ease-editorial: cubic-bezier(0.16, 0.75, 0.24, 1);
+  --dur-fast: 220ms;
+  --dur-med: 520ms;
+  --dur-slow: 900ms;
+}
+
+/* --------------------------------------------------------------------------
+   2. RESET & BASE
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-bg);
+  color: var(--color-ink-soft);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  /* overflow-x lives on <html>, not here — overflow-x: hidden on <body>
+     makes body compute overflow-y: auto (CSS 2.1 §11.1.1) and become its
+     own scroll container, which breaks position: sticky for descendants
+     (e.g. .system-split__media below) in Chromium/WebKit, since the sticky
+     element then sticks relative to body instead of the real document
+     scroller. Keeping the guard on <html> instead preserves the "no
+     horizontal scroll" protection without that side effect. */
+}
+
+img, video { max-width: 100%; display: block; }
+
+/* All decorative <video> elements on this site autoplay muted/looped — never
+   wait on a user click. Some WebKit builds render a native "start playback"
+   button overlay on any paused/loading <video> regardless of the `controls`
+   attribute; hide it everywhere so no video ever shows a play affordance. */
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+video::-webkit-media-controls {
+  display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+p { margin: 0; }
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+svg { display: block; }
+
+::selection { background: var(--color-accent-soft); color: var(--color-dark-bg); }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: var(--space-4);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  padding: var(--space-3) var(--space-5);
+  z-index: 1000;
+  transition: top var(--dur-fast) var(--ease-editorial);
+}
+.skip-link:focus { top: var(--space-4); }
+
+/* --------------------------------------------------------------------------
+   3. LAYOUT / GRID
+   -------------------------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-5);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--space-10);
+  background: var(--background);
+  color: var(--text-primary);
+}
+.section--tight { padding-block: var(--space-8); }
+.section--flush-top { padding-top: 0; }
+.section--flush-bottom { padding-bottom: 0; }
+
+[data-theme="dark"] {
+  --background: var(--color-dark-bg);
+  --surface: var(--color-dark-surface);
+  --text-primary: var(--color-on-dark);
+  --text-secondary: var(--color-on-dark-soft);
+  --border: var(--color-on-dark-border);
+}
+[data-theme="dark"] { background: var(--background); color: var(--color-on-dark-soft); }
+[data-theme="dark"] .btn--ghost { border-color: var(--color-on-dark-border); color: var(--color-on-dark); }
+[data-theme="dark"] .btn--ghost:hover { background: var(--color-on-dark-border); }
+
+/* --------------------------------------------------------------------------
+   4. TYPOGRAPHY UTILITIES
+   -------------------------------------------------------------------------- */
+.display-xl {
+  font-size: var(--fs-display-xl);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+.display-l { font-size: var(--fs-display-l); line-height: 1; letter-spacing: -0.015em; }
+.h1 { font-size: var(--fs-h1); }
+.h2 { font-size: var(--fs-h2); }
+.h3 { font-size: var(--fs-h3); }
+
+.uppercase-tight {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.body-l { font-size: var(--fs-body-l); line-height: 1.55; color: var(--text-secondary); }
+.body-s { font-size: var(--fs-body-s); color: var(--text-secondary); }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-secondary);
+}
+.eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: var(--color-accent);
+  display: inline-block;
+}
+
+.section-heading {
+  max-width: 46rem;
+  margin-bottom: var(--space-8);
+}
+.section-heading__eyebrow { margin-bottom: var(--space-4); }
+.section-heading__title { margin-bottom: var(--space-4); }
+.section-heading--split {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-6);
+  max-width: none;
+}
+
+.text-muted { color: var(--text-secondary); }
+.text-accent { color: var(--color-accent); }
+
+/* --------------------------------------------------------------------------
+   5. BUTTONS
+   -------------------------------------------------------------------------- */
+.btn {
+  --btn-fg: var(--color-bg);
+  --btn-bg: var(--color-ink);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-body-s);
+  letter-spacing: 0.02em;
+  padding: 0.95em 1.7em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  transition: transform var(--dur-fast) var(--ease-editorial), background var(--dur-fast) var(--ease-editorial), color var(--dur-fast) var(--ease-editorial), border-color var(--dur-fast) var(--ease-editorial);
+  white-space: nowrap;
+  text-shadow: none; /* buttons sit on their own solid fill, never on raw video/photo — the hero's text-shadow-for-legibility rule must not bleed into button labels */
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn--primary { background: var(--color-ink); color: var(--color-bg); }
+.btn--primary:hover { background: var(--color-accent-ink); }
+[data-theme="dark"] .btn--primary { background: var(--color-on-dark); color: var(--color-dark-bg); }
+[data-theme="dark"] .btn--primary:hover { background: var(--color-accent-soft); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-border);
+}
+.btn--ghost:hover { background: var(--color-ink); color: var(--color-bg); }
+
+.btn--sm { padding: 0.7em 1.35em; font-size: var(--fs-caption); }
+
+.btn__arrow { transition: transform var(--dur-fast) var(--ease-editorial); }
+.btn:hover .btn__arrow { transform: translateX(3px); }
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  font-size: var(--fs-body-s);
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 2px;
+  transition: border-color var(--dur-fast) var(--ease-editorial), gap var(--dur-fast) var(--ease-editorial), color var(--dur-fast);
+}
+.link-arrow:hover { border-color: currentColor; gap: var(--space-3); color: var(--color-accent); }
+
+/* --------------------------------------------------------------------------
+   6. HEADER / NAVIGATION
+   -------------------------------------------------------------------------- */
+.site-header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 200;
+  padding-block: var(--space-5);
+  transition: padding var(--dur-fast) var(--ease-editorial), background var(--dur-fast) var(--ease-editorial), border-color var(--dur-fast) var(--ease-editorial);
+  border-bottom: 1px solid transparent;
+}
+.site-header.is-scrolled {
+  padding-block: var(--space-3);
+  background: rgba(246, 242, 234, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom-color: var(--color-border);
+}
+/* Every page in this site has a dark section (video or dark page-hero) directly
+   behind the fixed header, so the pre-scroll state is always "light text on
+   dark background" — universal, not conditional on a per-page theme class. */
+.site-header:not(.is-scrolled) { color: var(--color-on-dark); }
+.site-header:not(.is-scrolled) .logo { color: var(--color-on-dark); }
+.site-header:not(.is-scrolled) .nav-link { color: var(--color-on-dark); }
+.site-header:not(.is-scrolled) .hamburger span { background: var(--color-on-dark); }
+.site-header.is-scrolled .btn--primary { --btn-bg: var(--color-ink); --btn-fg: var(--color-bg); }
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+.logo svg { width: 30px; height: 30px; }
+.logo__mark-bg { fill: var(--color-ink); }
+.logo__mark-line { stroke: var(--color-bg); }
+.logo__mark-base { stroke: var(--color-accent); }
+
+.main-nav { display: none; }
+.main-nav__list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+}
+.nav-link {
+  position: relative;
+  font-size: var(--fs-body-s);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-ink);
+  padding-block: var(--space-2);
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 100%;
+  bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transition: right var(--dur-fast) var(--ease-editorial);
+}
+.nav-link:hover::after, .nav-link[aria-current="page"]::after { right: 0; }
+.nav-link[aria-current="page"] { color: var(--color-accent); }
+
+.header-actions { display: flex; align-items: center; gap: var(--space-5); }
+.header-actions .btn { display: none; }
+
+.hamburger {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 34px;
+  height: 34px;
+}
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: var(--color-ink);
+  transition: transform var(--dur-fast) var(--ease-editorial), opacity var(--dur-fast) var(--ease-editorial);
+}
+.hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: var(--color-dark-bg);
+  color: var(--color-on-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-10) var(--container-pad);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity var(--dur-med) var(--ease-editorial), transform var(--dur-med) var(--ease-editorial), visibility 0s linear var(--dur-med);
+}
+.mobile-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity var(--dur-med) var(--ease-editorial), transform var(--dur-med) var(--ease-editorial);
+}
+.mobile-menu__list { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-9); }
+.mobile-menu__link {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 9vw, 3rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+.mobile-menu__link small { font-family: var(--font-body); font-size: 0.9rem; color: var(--color-on-dark-soft); font-weight: 500; }
+.mobile-menu__footer { display: flex; flex-direction: column; gap: var(--space-4); color: var(--color-on-dark-soft); font-size: var(--fs-body-s); }
+.mobile-menu__footer a:hover { color: var(--color-on-dark); }
+body.menu-open { overflow: hidden; }
+
+@media (min-width: 960px) {
+  .main-nav { display: block; }
+  .header-actions .btn { display: inline-flex; }
+  .hamburger { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   7. HERO
+   -------------------------------------------------------------------------- */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: var(--color-on-dark);
+  overflow: hidden;
+}
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero__media video, .hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* Guarantees text legibility against any frame of the video/photo behind
+     it — bright sky, pale fog, snow — not just the best-case frame. Darker
+     and more continuous than the original pass (no near-transparent band
+     in the middle third, where the eyebrow/H1 often sit on short
+     viewports), plus text-shadow on the type itself as a second layer of
+     defense per IMG-06. */
+  background: linear-gradient(180deg, rgba(15, 14, 10, 0.5) 0%, rgba(15, 14, 10, 0.38) 28%, rgba(15, 14, 10, 0.66) 62%, rgba(15, 14, 10, 0.9) 100%);
+}
+.hero__content {
+  position: relative;
+  z-index: 1;
+  padding-top: calc(var(--header-h) + var(--space-8));
+  padding-bottom: var(--space-9);
+  /* Second, independent layer of legibility on top of the gradient overlay
+     above — holds up even on the brightest frame of the video (open sky,
+     snow) or the busiest (branches crossing the letterforms), and matters
+     most on mobile where the overlay is the same but the type sits closer
+     to the visual noise of the frame. */
+  text-shadow: 0 2px 20px rgba(10, 9, 6, 0.55), 0 1px 3px rgba(10, 9, 6, 0.5);
+}
+.hero__eyebrow { color: var(--color-on-dark-soft); margin-bottom: var(--space-5); }
+.hero__eyebrow::before { background: var(--color-accent-soft); }
+.hero__title {
+  font-size: var(--fs-display-xl);
+  text-transform: uppercase;
+  color: var(--color-on-dark);
+  max-width: 18ch;
+}
+.hero__foot {
+  margin-top: var(--space-8);
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+.hero__statement { max-width: 34rem; font-size: var(--fs-body-l); color: var(--color-on-dark-soft); }
+.hero__ctas { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); }
+.hero__proof {
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-on-dark-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: var(--color-on-dark-soft);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.02em;
+}
+.hero__proof li { display: flex; align-items: baseline; gap: var(--space-3); }
+.hero__proof li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--color-accent-soft); flex-shrink: 0; }
+@media (min-width: 700px) {
+  .hero__proof { flex-direction: row; flex-wrap: wrap; gap: var(--space-6); }
+}
+.hero__scroll {
+  position: absolute;
+  right: var(--container-pad);
+  bottom: var(--space-6);
+  z-index: 1;
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-on-dark-soft);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.hero__scroll-line { width: 1px; height: 46px; background: linear-gradient(var(--color-on-dark-soft), transparent); position: relative; overflow: hidden; }
+.hero__scroll-line::after {
+  content: "";
+  position: absolute; left: 0; top: -100%; width: 100%; height: 100%;
+  background: var(--color-on-dark);
+  animation: scrollline 2.4s var(--ease-editorial) infinite;
+}
+@keyframes scrollline { to { top: 100%; } }
+
+@media (min-width: 700px) {
+  .hero__foot { grid-template-columns: 1.1fr 0.9fr; align-items: end; }
+}
+@media (min-width: 1000px) {
+  .hero__scroll { display: flex; }
+}
+
+/* --------------------------------------------------------------------------
+   8. PAGE HERO (internal pages — shorter, editorial)
+   -------------------------------------------------------------------------- */
+.page-hero {
+  position: relative;
+  padding-top: calc(var(--header-h) + var(--space-9));
+  padding-bottom: var(--space-9);
+  background: var(--color-dark-bg);
+  color: var(--color-on-dark);
+  overflow: hidden;
+}
+.page-hero__grid {
+  display: grid;
+  gap: var(--space-6);
+}
+.page-hero__title { color: var(--color-on-dark); text-transform: uppercase; }
+.page-hero__lede { color: var(--color-on-dark-soft); max-width: 40rem; font-size: var(--fs-body-l); }
+.page-hero__media {
+  margin-top: var(--space-8);
+  border-radius: 2px;
+}
+.page-hero__media img, .page-hero__media video { width: 100%; height: auto; display: block; }
+@media (min-width: 900px) {
+  .page-hero__grid { grid-template-columns: 1.2fr 0.8fr; align-items: end; }
+}
+
+/* --------------------------------------------------------------------------
+   8b. FULL-BLEED MEDIA — breaks out of the container to the viewport edge
+   -------------------------------------------------------------------------- */
+.bleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.bleed-feature {
+  padding-bottom: var(--space-10);
+  background: var(--background);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+/* Large and edge-to-edge, but capped so photo + heading + the section's own
+   content always compose as one readable screen — never a photo so tall it
+   pushes everything else below the fold. object-fit: contain guarantees the
+   full frame is always visible (no cropping); the section's own background
+   fills any letterboxing so the cap never reads as an empty bar. */
+.bleed-feature__media {
+  position: relative;
+  height: clamp(300px, 62vh, 640px);
+  background: var(--background);
+}
+.bleed-feature__media img, .bleed-feature__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+/* True full-bleed variant — for sections where the photo itself IS the
+   moment (e.g. "Ліс не за вікном"), not a diagram/photo that needs to share
+   the screen with a dense content grid below. No height cap: the frame
+   follows the image's own aspect ratio at full viewport width, so the whole
+   photo is visible, large, edge-to-edge — never a small photo in a box. */
+.bleed-feature__media--immersive {
+  height: auto;
+}
+.bleed-feature__media--immersive img,
+.bleed-feature__media--immersive video {
+  height: auto;
+  object-fit: cover;
+}
+.bleed-feature__caption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: var(--space-8) var(--container-pad);
+  /* Darker and starts higher than a minimal caption scrim would, plus
+     text-shadow on the type itself — the photo behind it isn't always dark
+     (fog, snow, lit windows), so the scrim can't rely on the image doing
+     half the contrast work. */
+  background: linear-gradient(180deg, transparent, rgba(15,14,10,0.55) 45%, rgba(15,14,10,0.88) 100%);
+  color: var(--color-on-dark);
+  text-shadow: 0 2px 18px rgba(10, 9, 6, 0.5), 0 1px 3px rgba(10, 9, 6, 0.45);
+}
+.bleed-feature__body {
+  padding-top: var(--space-8);
+}
+@media (min-width: 900px) {
+  .bleed-feature__body { max-width: 46rem; }
+  .bleed-feature__body--wide { max-width: none; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--space-8); }
+}
+
+/* --------------------------------------------------------------------------
+   8c. MATERIAL SPLIT — photo | stacked horizontal material tiles
+   -------------------------------------------------------------------------- */
+.material-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+}
+.material-split__media {
+  position: relative;
+  background: var(--color-surface);
+}
+/* object-fit: contain — the full photograph is always shown, never cropped;
+   if the frame's ratio doesn't match the source, the surface colour shows
+   through as neutral letterboxing rather than clipping the image. */
+.material-split__media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.material-split__stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+}
+.material-tile {
+  position: relative;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  transition: background var(--dur-fast) var(--ease-editorial);
+}
+.material-tile__code {
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.14em;
+  opacity: 0.6;
+}
+.material-tile__name {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.4vw + 1rem, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin-top: var(--space-2);
+}
+.material-tile__desc { font-size: var(--fs-body-s); max-width: 40ch; }
+.material-tile__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.material-tile__link svg { transition: transform var(--dur-fast) var(--ease-editorial); }
+.material-tile:hover .material-tile__link svg { transform: translateX(3px); }
+
+.material-tile--timber { background: #B8926B; color: #201306; }
+.material-tile--stone { background: #D9D2C2; color: #201f18; }
+.material-tile--metal { background: #232019; color: #F1ECE0; }
+.material-tile--glass { background: #E4EAE6; color: #16201b; }
+.material-tile--timber .material-tile__code,
+.material-tile--stone .material-tile__code,
+.material-tile--glass .material-tile__code { opacity: 0.55; }
+.material-tile--metal .material-tile__code { opacity: 0.55; color: #F1ECE0; }
+
+@media (min-width: 560px) {
+  .material-tile--row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-7);
+  }
+  .material-tile--row .material-tile__head { flex-shrink: 0; width: 12rem; }
+  .material-tile--row .material-tile__body { flex: 1; }
+}
+@media (min-width: 900px) {
+  .material-split { grid-template-columns: 1fr 1.15fr; align-items: stretch; }
+  .material-split__stack { height: 100%; }
+  .material-tile--row { flex: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   9. REVEAL / MOTION UTILITIES
+   -------------------------------------------------------------------------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity var(--dur-slow) var(--ease-editorial), transform var(--dur-slow) var(--ease-editorial);
+}
+[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+[data-reveal="scale"] { transform: translateY(0) scale(1.06); }
+[data-reveal="scale"].is-visible { transform: scale(1); }
+[data-reveal-group] [data-reveal] { transition-delay: calc(var(--i, 0) * 90ms); }
+
+.media-frame { overflow: hidden; position: relative; background: var(--color-surface-2); }
+.media-frame img, .media-frame video { transition: transform 1.1s var(--ease-editorial); }
+.media-frame:hover img, .media-frame:hover video { transform: scale(1.045); }
+
+/* --------------------------------------------------------------------------
+   10. STATEMENT / MANIFESTO BLOCK
+   -------------------------------------------------------------------------- */
+.statement {
+  padding-block: var(--space-11);
+}
+.statement__text {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw + 0.6rem, 3.1rem);
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+  max-width: 22ch;
+  color: var(--text-primary);
+}
+.statement__text em {
+  font-style: normal;
+  color: var(--color-accent);
+}
+.statement__meta {
+  margin-top: var(--space-8);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: var(--fs-body-s);
+  max-width: 40rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. FEATURED PROJECT (home + technology.html's 6 sections)
+   -------------------------------------------------------------------------- */
+.featured {
+  display: grid;
+  gap: var(--space-6);
+}
+.featured__media img { width: 100%; height: auto; display: block; }
+.featured__body { display: flex; flex-direction: column; justify-content: center; gap: var(--space-6); }
+.featured__meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border);
+}
+.featured__meta dt { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: var(--space-1); }
+.featured__meta dd { margin: 0; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; }
+
+@media (min-width: 900px) {
+  .featured { grid-template-columns: 1.15fr 0.85fr; align-items: center; }
+  .featured--reverse { grid-template-columns: 0.85fr 1.15fr; }
+  .featured--reverse .featured__media { order: 2; }
+  .featured--reverse .featured__body { order: 1; }
+  /* technology.html's 6 sections reuse this pattern with source photos of very
+     different native ratios (0.8 portrait up to 1.79 wide landscape). Left to
+     their natural width:100%/height:auto size, a portrait photo in the wider
+     grid track balloons past 900px tall next to a ~450px text column, which
+     even with align-items: center reads as a large accidental empty gap above
+     and below the text. Capping every .featured__media to the same 4:3 frame
+     (object-fit: contain, never crop) keeps every one of the 6 sections at a
+     comparable, predictable height regardless of source orientation — any
+     minor letterboxing shows the media-frame surface colour, the same
+     accepted neutral-fill treatment already used by MATERIAL SPLIT/SYSTEM
+     SPLIT above, so the sizing reads as intentional, not a stretched gap. */
+  .featured__media { aspect-ratio: 4 / 3; overflow: hidden; }
+  .featured__media img { height: 100%; object-fit: contain; }
+}
+
+/* --------------------------------------------------------------------------
+   12. SYSTEM / TECHNOLOGY DIAGRAM
+   -------------------------------------------------------------------------- */
+.system {
+  display: grid;
+  gap: var(--space-8);
+}
+.system__media { position: relative; }
+.system__media img { width: 100%; border-radius: 2px; }
+.system__layers { display: flex; flex-direction: column; }
+.system-layer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-5);
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--border);
+  cursor: default;
+}
+.system-layer:last-child { border-bottom: 1px solid var(--border); }
+.system-layer__index { font-family: var(--font-display); font-size: var(--fs-caption); color: var(--color-accent); padding-top: 2px; }
+.system-layer__title { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; margin-bottom: var(--space-2); }
+.system-layer__desc { color: var(--text-secondary); font-size: var(--fs-body-s); max-width: 42ch; }
+
+@media (min-width: 1000px) {
+  .system { grid-template-columns: 1fr 1fr; align-items: center; }
+}
+
+/* --------------------------------------------------------------------------
+   12b. SYSTEM SPLIT — photo | stacked numbered breakdown
+   (same two-column idea as MATERIAL SPLIT above, dark theme. The photo is a
+   disassembled wall-section diagram — every layer must stay legible, so
+   object-fit: contain is used, same as MATERIAL SPLIT: the full photograph
+   is always shown, never cropped. The frame's aspect-ratio is set to match
+   the source photo's native ratio (1800x1350 = 4:3), so there is no visible
+   letterboxing in normal cases. The tile list on the right is long (7
+   entries) and routinely taller than the photo — instead of stretching the
+   media frame to match (which reintroduces empty letterboxing) the frame is
+   sticky on desktop, staying in view while the list scrolls past it.)
+   -------------------------------------------------------------------------- */
+.system-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+}
+.system-split__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--color-dark-surface);
+  overflow: hidden;
+}
+.system-split__media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.wall-system__intro { max-width: 42rem; margin-top: var(--space-6); color: var(--color-on-dark-soft); }
+.wall-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--color-on-dark-border);
+  border: 1px solid var(--color-on-dark-border);
+  margin-top: var(--space-7);
+}
+.wall-tile {
+  position: relative;
+  background: var(--color-dark-bg);
+  padding: var(--space-6);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-4);
+  row-gap: var(--space-2);
+  transition: background var(--dur-fast) var(--ease-editorial);
+}
+.wall-tile:hover { background: var(--color-dark-surface); }
+.wall-tile__index {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2vw + 1rem, 1.85rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-accent-soft);
+}
+.wall-tile__title { grid-column: 2; grid-row: 1; align-self: center; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--color-on-dark); }
+.wall-tile__desc { grid-column: 1 / -1; grid-row: 2; color: var(--color-on-dark-soft); font-size: var(--fs-body-s); max-width: 44ch; }
+@media (min-width: 900px) {
+  .system-split { grid-template-columns: 1fr 1fr; align-items: start; gap: var(--space-8); }
+  .system-split__media { position: sticky; top: 7rem; }
+}
+
+/* --------------------------------------------------------------------------
+   13. PROJECT / MODEL CARDS — editorial grid
+   -------------------------------------------------------------------------- */
+.editorial-grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+.editorial-card { display: block; }
+.editorial-card__media { margin-bottom: var(--space-5); }
+.editorial-card__media img { width: 100%; height: auto; display: block; }
+.editorial-card__meta { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-4); margin-bottom: var(--space-2); }
+.editorial-card__title { font-size: 1.3rem; }
+.editorial-card__tag { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); white-space: nowrap; }
+.editorial-card__desc { color: var(--text-secondary); font-size: var(--fs-body-s); max-width: 34ch; }
+
+@media (min-width: 780px) {
+  /* Asymmetric column spans only — no manual vertical offsets, since real
+     photograph ratios vary and every image must render uncropped at its
+     natural height (no fixed-height masonry trick that could force overlap). */
+  .editorial-grid { grid-template-columns: repeat(12, 1fr); align-items: start; }
+  .editorial-grid > .editorial-card:nth-child(1) { grid-column: span 7; }
+  .editorial-grid > .editorial-card:nth-child(2) { grid-column: span 5; }
+  .editorial-grid > .editorial-card:nth-child(3) { grid-column: span 5; }
+  .editorial-grid > .editorial-card:nth-child(4) { grid-column: span 7; }
+  .editorial-grid > .editorial-card:nth-child(5) { grid-column: 3 / span 8; }
+}
+
+/* (legacy .materials/.material-card swatch grid removed — superseded by
+   .material-lead + .material-index in section 8c) */
+
+/* --------------------------------------------------------------------------
+   15. NUMBERS / PARAMETERS
+   -------------------------------------------------------------------------- */
+.parameters {
+  display: grid;
+  gap: var(--space-7);
+  grid-template-columns: 1fr;
+}
+.parameter__value {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 4vw + 1rem, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.parameter__label {
+  margin-top: var(--space-3);
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+  max-width: 26ch;
+}
+@media (min-width: 780px) {
+  .parameters { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   16. EDITORIAL QUOTE
+   -------------------------------------------------------------------------- */
+.quote-block { max-width: 46rem; }
+.quote-block__mark { font-family: var(--font-display); font-size: 3rem; color: var(--color-accent); line-height: 1; margin-bottom: var(--space-4); }
+.quote-block__text {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 1.6vw + 1rem, 2.1rem);
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+.quote-block__caption {
+  margin-top: var(--space-6);
+  font-size: var(--fs-caption);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* --------------------------------------------------------------------------
+   17. FINAL CTA
+   -------------------------------------------------------------------------- */
+.final-cta {
+  position: relative;
+  padding-block: var(--space-12);
+  text-align: left;
+  overflow: hidden;
+}
+.final-cta__title { max-width: 16ch; margin-bottom: var(--space-7); text-transform: uppercase; }
+.final-cta__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); justify-content: space-between; }
+.final-cta__contact { display: flex; flex-direction: column; gap: var(--space-2); color: var(--text-secondary); font-size: var(--fs-body-s); }
+.final-cta__contact a:hover { color: var(--color-accent-soft); }
+
+/* --------------------------------------------------------------------------
+   17b. HERO VIDEO — desktop / mobile source swap
+   -------------------------------------------------------------------------- */
+[data-hero-video="mobile"] { display: block; }
+[data-hero-video="desktop"] { display: none; }
+@media (min-width: 700px) {
+  [data-hero-video="mobile"] { display: none; }
+  [data-hero-video="desktop"] { display: block; }
+}
+
+/* --------------------------------------------------------------------------
+   17c. MINI PROCESS GRID (home teaser)
+   -------------------------------------------------------------------------- */
+.mini-steps {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: 1fr;
+}
+.mini-step { padding-top: var(--space-5); border-top: 1px solid var(--border); }
+.mini-step__index { font-family: var(--font-display); color: var(--color-accent); font-size: var(--fs-body-s); font-weight: 700; }
+.mini-step__title { margin-block: var(--space-2) var(--space-2); font-size: 1.05rem; }
+.mini-step__desc { color: var(--text-secondary); font-size: var(--fs-body-s); }
+@media (min-width: 700px) {
+  .mini-steps { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   18. PROCESS TIMELINE
+   -------------------------------------------------------------------------- */
+.process-list { display: flex; flex-direction: column; }
+.process-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-5);
+  padding-block: var(--space-7);
+  border-top: 1px solid var(--border);
+}
+.process-list > .process-step:last-child { border-bottom: 1px solid var(--border); }
+.process-step__index {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.4vw, 2.4rem);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.process-step__title { margin-bottom: var(--space-3); }
+.process-step__desc { color: var(--text-secondary); max-width: 46ch; margin-bottom: var(--space-4); }
+.process-step__output {
+  display: inline-flex;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+.process-step__output strong { color: var(--text-primary); font-weight: 600; }
+.process-step__media { margin-top: var(--space-5); }
+.process-step__media img { width: 100%; height: auto; display: block; }
+
+@media (min-width: 900px) {
+  .process-step { grid-template-columns: 120px 1fr; gap: var(--space-8); }
+  .process-step__body { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8); align-items: start; }
+}
+
+/* --------------------------------------------------------------------------
+   19. FORM
+   -------------------------------------------------------------------------- */
+.form-grid { display: grid; gap: var(--space-5); grid-template-columns: 1fr; }
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+.field--full { grid-column: 1 / -1; }
+.field label {
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+.field input, .field select, .field textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding-block: var(--space-3);
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+  transition: border-color var(--dur-fast) var(--ease-editorial);
+}
+.field textarea { resize: vertical; min-height: 100px; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--text-secondary); opacity: 0.6; }
+.field--error input, .field--error select, .field--error textarea { border-color: var(--color-error); }
+.field__error { font-size: var(--fs-caption); color: var(--color-error); min-height: 1.2em; }
+
+.form-status {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--fs-body-s);
+  border-radius: 2px;
+  margin-top: var(--space-5);
+}
+.form-status.is-visible { display: flex; }
+.form-status--success { background: var(--color-success-bg); color: var(--color-success); }
+.form-status--error { background: var(--color-error-bg); color: var(--color-error); }
+.form-status--sending { background: var(--surface); color: var(--text-secondary); }
+
+.form-submit-row { display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap; margin-top: var(--space-3); }
+.form-note { font-size: var(--fs-caption); color: var(--text-secondary); }
+
+@media (min-width: 700px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* --------------------------------------------------------------------------
+   20. FOOTER
+   -------------------------------------------------------------------------- */
+.site-footer {
+  background: var(--color-dark-bg);
+  color: var(--color-on-dark-soft);
+  padding-block: var(--space-10) var(--space-6);
+}
+.site-footer a:hover { color: var(--color-on-dark); }
+.footer-top {
+  display: grid;
+  gap: var(--space-8);
+  padding-bottom: var(--space-9);
+  border-bottom: 1px solid var(--color-on-dark-border);
+}
+.footer-brand { max-width: 26rem; }
+.footer-brand .logo { color: var(--color-on-dark); margin-bottom: var(--space-5); }
+.footer-brand .logo__mark-bg { fill: var(--color-on-dark); }
+.footer-brand .logo__mark-line { stroke: var(--color-dark-bg); }
+.footer-cols { display: grid; gap: var(--space-8); grid-template-columns: repeat(2, 1fr); }
+.footer-col__title { font-size: var(--fs-caption); text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-on-dark); margin-bottom: var(--space-4); }
+.footer-col ul { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--fs-body-s); }
+.footer-bottom {
+  padding-top: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--fs-caption);
+}
+
+@media (min-width: 780px) {
+  .footer-top { grid-template-columns: 1.3fr 2fr; }
+  .footer-cols { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   21. RESPONSIVE — global refinements
+   -------------------------------------------------------------------------- */
+@media (min-width: 700px) {
+  .section { padding-block: var(--space-11); }
+}
+@media (min-width: 1280px) {
+  :root { --header-h: 96px; }
+}
+
+/* --------------------------------------------------------------------------
+   22. UTILITIES
+   -------------------------------------------------------------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+.stack { display: flex; flex-direction: column; }
+.gap-4 { gap: var(--space-4); }
+.gap-5 { gap: var(--space-5); }
+.mt-8 { margin-top: var(--space-8); }
+.divider { height: 1px; background: var(--border); border: none; }
