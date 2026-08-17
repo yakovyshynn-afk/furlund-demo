@@ -775,6 +775,17 @@ body.menu-open { overflow: hidden; }
 [data-reveal="scale"].is-visible { transform: scale(1); }
 [data-reveal-group] [data-reveal] { transition-delay: calc(var(--i, 0) * 90ms); }
 
+/* `scale-only`: same entrance motion as `scale`, but never sets opacity:0.
+   Reserved for containers that directly wrap an `autoplay` <video>. iOS/WebKit
+   evaluates a video's eligibility for gesture-free autoplay at initial paint —
+   if the element (or an ancestor) is `opacity:0` at that moment, Safari can
+   permanently deny autoplay for that element, and the later opacity:0→1
+   transition does not re-trigger the check. Photos keep `scale` (opacity
+   fade is fine there); video wrappers use this instead so the motion design
+   stays, without ever hiding the video from the browser. */
+[data-reveal="scale-only"] { opacity: 1; transform: scale(1.06); transition: transform var(--dur-slow) var(--ease-editorial); }
+[data-reveal="scale-only"].is-visible { transform: scale(1); }
+
 .media-frame { overflow: hidden; position: relative; background: var(--color-surface-2); }
 .media-frame img, .media-frame video { transition: transform 1.1s var(--ease-editorial); }
 .media-frame:hover img, .media-frame:hover video { transform: scale(1.045); }
