@@ -45,83 +45,28 @@
     });
   }
 
-  /* ---- Decorative autoplay videos: play only once actually ready, retry
-     once on rejection ----------------------------------------------------
-     Calling `.play()` immediately after `.load()` while `readyState` is
-     still 0 (no data fetched yet) is not reliable across engines — some
-     WebKit builds silently drop that play request instead of queuing it,
-     leaving the video stuck on its poster frame forever with no error in
-     the console. `playWhenReady` waits for `canplay`/`loadeddata` (proof
-     the browser actually has a frame to show) before calling `.play()`,
-     and if that first attempt is still rejected (autoplay policy racing
-     with the event, tab backgrounded, etc.) it retries once more on the
-     next `canplay`/`loadeddata` tick rather than giving up silently. */
-  var playWhenReady = function (video) {
-    var attempt = function () {
-      var playPromise = video.play();
-      if (playPromise && playPromise.catch) {
-        playPromise.catch(function () {
-          var retry = function () {
-            video.removeEventListener('canplay', retry);
-            video.removeEventListener('loadeddata', retry);
-            video.play().catch(function () {});
-          };
-          video.addEventListener('canplay', retry, { once: true });
-          video.addEventListener('loadeddata', retry, { once: true });
-        });
-      }
-    };
-    if (video.readyState >= 2) {
-      attempt();
-      return;
-    }
-    var onReady = function () {
-      video.removeEventListener('canplay', onReady);
-      video.removeEventListener('loadeddata', onReady);
-      attempt();
-    };
-    video.addEventListener('canplay', onReady, { once: true });
-    video.addEventListener('loadeddata', onReady, { once: true });
-    if (video.readyState === 0) video.load();
-  };
-
-  /* ---- Hero video: serve the matching source for the viewport -------- */
-  var heroDesktop = document.querySelector('[data-hero-video="desktop"]');
-  var heroMobile = document.querySelector('[data-hero-video="mobile"]');
-  if (heroDesktop && heroMobile) {
-    var heroMq = window.matchMedia('(min-width: 700px)');
-    var applyHeroVideo = function () {
-      var show = heroMq.matches ? heroDesktop : heroMobile;
-      var hide = heroMq.matches ? heroMobile : heroDesktop;
-      hide.pause();
-      playWhenReady(show);
-    };
-    applyHeroVideo();
-    if (heroMq.addEventListener) heroMq.addEventListener('change', applyHeroVideo);
-    else if (heroMq.addListener) heroMq.addListener(applyHeroVideo);
-  }
-
-  /* ---- Below-the-fold autoplay videos: fetch + play on approach ------
-     `preload="metadata"` gives the browser a head start on container/
-     duration info without paying the full download cost up front; the
-     rest streams in once the video is actually about to be seen, driven
-     by IntersectionObserver so the fetch doesn't start on page load. */
-  var deferredVideos = document.querySelectorAll('video[autoplay]:not([data-hero-video])');
-  if (deferredVideos.length) {
-    if ('IntersectionObserver' in window) {
-      var videoObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            playWhenReady(entry.target);
-            videoObserver.unobserve(entry.target);
-          }
-        });
-      }, { rootMargin: '200px 0px' });
-      deferredVideos.forEach(function (video) { videoObserver.observe(video); });
-    } else {
-      deferredVideos.forEach(playWhenReady);
-    }
-  }
+  /* ---- Autoplay videos: no JS-driven load()/play() at all -------------
+     iOS/WebKit grants autoplay-without-a-user-gesture based on the video
+     being `autoplay muted playsinline` *in the markup the engine parses
+     on initial load*. Any script that later calls `.load()` and/or
+     `.play()` on that same element — even with `muted`/`playsinline`
+     already set — can make WebKit treat it as a fresh, script-initiated
+     play request and silently block it (no console error, video just
+     sits on its poster). Two earlier passes here tried to "help" the
+     browser via `IntersectionObserver` + manual `.load()`/`.play()`
+     (with `canplay`/`loadeddata` waits, retries, etc.) — that is
+     precisely the pattern that breaks iOS Safari. The fix is to do
+     nothing: `autoplay muted playsinline loop` in the HTML plus a
+     browser-appropriate `preload` is the entire mechanism. The only
+     JS left below is a defensive `muted`/`defaultMuted` set (belt and
+     braces for engines that ignore the attribute under some condition)
+     that never touches `.load()` or `.play()`. Hero desktop/mobile
+     source selection is handled entirely by the CSS media query in
+     styles.css (`[data-hero-video]` display swap) — no JS needed. */
+  document.querySelectorAll('video[autoplay]').forEach(function (video) {
+    video.muted = true;
+    video.defaultMuted = true;
+  });
 
   /* ---- Scroll reveal ------------------------------------------------- */
   var revealEls = document.querySelectorAll('[data-reveal]');
