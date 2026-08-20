@@ -686,12 +686,9 @@ body.menu-open { overflow: hidden; }
 }
 .material-split__media {
   position: relative;
-  background: var(--color-surface);
+  background: transparent;
 }
-/* object-fit: contain — the full photograph is always shown, never cropped;
-   if the frame's ratio doesn't match the source, the surface colour shows
-   through as neutral letterboxing rather than clipping the image. */
-.material-split__media img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.material-split__media img { width: 100%; height: auto; display: block; }
 
 .material-split__stack {
   display: grid;
@@ -757,8 +754,16 @@ body.menu-open { overflow: hidden; }
   .material-tile--row .material-tile__body { flex: 1; }
 }
 @media (min-width: 900px) {
-  .material-split { grid-template-columns: 1fr 1.15fr; align-items: stretch; }
-  .material-split__stack { height: 100%; }
+  /* align-items: stretch used to force .material-split__media to match the
+     tile stack's height, combined with object-fit: contain on a portrait
+     source photo (materials-still.webp, 1120x1400) — that stretched a
+     visibly narrower-than-column image inside a full-width box, showing
+     the surface colour as empty bars either side. Natural width:100%/
+     height:auto sizing (start-aligned) shows the full photo with no forced
+     box; capped by max-height so it doesn't run far taller than the tile
+     stack next to it. */
+  .material-split { grid-template-columns: 1fr 1.15fr; align-items: start; }
+  .material-split__media img { max-height: 34rem; width: auto; max-width: 100%; margin-inline: auto; }
   .material-tile--row { flex: 1; }
 }
 
@@ -844,18 +849,33 @@ body.menu-open { overflow: hidden; }
   .featured--reverse .featured__media { order: 2; }
   .featured--reverse .featured__body { order: 1; }
   /* technology.html's 6 sections reuse this pattern with source photos of very
-     different native ratios (0.8 portrait up to 1.79 wide landscape). Left to
-     their natural width:100%/height:auto size, a portrait photo in the wider
-     grid track balloons past 900px tall next to a ~450px text column, which
-     even with align-items: center reads as a large accidental empty gap above
-     and below the text. Capping every .featured__media to the same 4:3 frame
-     (object-fit: contain, never crop) keeps every one of the 6 sections at a
-     comparable, predictable height regardless of source orientation — any
-     minor letterboxing shows the media-frame surface colour, the same
-     accepted neutral-fill treatment already used by MATERIAL SPLIT/SYSTEM
-     SPLIT above, so the sizing reads as intentional, not a stretched gap. */
-  .featured__media { aspect-ratio: 4 / 3; overflow: hidden; }
-  .featured__media img { height: 100%; object-fit: contain; }
+     different native ratios (0.8 portrait up to 1.79 wide landscape). An
+     earlier pass capped every .featured__media to a uniform 4:3 frame
+     (object-fit: contain) so all 6 sections read at a comparable height —
+     but for any photo whose native ratio isn't close to 4:3, "never crop"
+     inside a fixed 4:3 box necessarily means visible empty bars (the
+     media-frame surface colour showing through top/bottom or left/right of
+     the photo). Confirmed on a real device (iPad Safari, fog.webp in
+     "05 · Довговічність" — clear cream bands above/below the photo).
+     Fix: no forced box at all. The image keeps its own real aspect ratio,
+     scaled down only by max-height so no single section towers over its
+     text column; centered so there's no leftover frame around it. Sections
+     end up at slightly different heights depending on each photo's own
+     orientation — expected and fine for an editorial layout, not something
+     to paper over with letterboxing. */
+  .featured__media {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .featured__media img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 30rem;
+    display: block;
+  }
 }
 
 /* --------------------------------------------------------------------------
